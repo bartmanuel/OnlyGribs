@@ -1,0 +1,6 @@
+if (indicatorOfParameter == 1 && indicatorOfTypeOfLevel == 103) {
+  set shortName = "msl";
+  set typeOfLevel = "meanSea";
+  set level = 0;
+  write;
+}

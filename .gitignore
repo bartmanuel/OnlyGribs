@@ -1,0 +1,17 @@
+# Grib data files
+*.grib
+*.grb
+*.grib2
+
+# Downloaded archives
+*.tar
+
+# Directories with downloaded/processed data
+extracted/
+downloads/
+
+# Images
+img/
+
+# macOS
+.DS_Store

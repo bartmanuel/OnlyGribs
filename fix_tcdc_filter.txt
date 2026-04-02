@@ -1,0 +1,5 @@
+set shortName = "tcc";
+set typeOfLevel = "entireAtmosphere";
+#set level = 0;
+
+write;

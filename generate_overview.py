@@ -13,9 +13,10 @@ def file_link(area, timewindow, paramset):
 
 
 def row(area, img, label):
+    img_tag = f'<img src="img/{img}" width="100" height="100" /><br />' if img else ""
     return f"""
     <tr>
-      <td rowspan="2"><img src="img/{img}" width="100" height="100" /><br />{label}</td>
+      <td rowspan="2">{img_tag}{label}</td>
       <td>All params</td>
       <td>{file_link(area, "alltime", "allparams")}</td>
       <td>{file_link(area, "nextday", "allparams")}</td>
@@ -36,13 +37,13 @@ def main():
     weatherfiles_publication_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     areas = [
-        ("ModelArea",    "ModelArea.jpg",    "Model Area"),
-        ("NorthSea",     "NorthSea.png",     "North Sea"),
-        ("NorthSeaSouth","NorthSeaSouth.png", "North Sea South"),
-        ("Channel",      "Channel.png",      "Channel"),
-        ("Zealand",      "Zealand.png",      "Zealand"),
-        ("LakeIJssel",   "LakeIJssel.png",   "Lake IJssel"),
-        ("WaddenSea",    "WaddenSea.png",    "Wadden Sea"),
+        ("ModelArea",    None,                "Model Area"),
+        ("NorthSea",     "NorthSea.png",      "North Sea"),
+        ("NorthSeaSouth","NorthSeaSouth.png",  "North Sea South"),
+        ("Channel",      "Channel.png",        "Channel"),
+        ("Zealand",      "Zealand.png",        "Zealand"),
+        ("LakeIJssel",   "LakeIJssel.png",     "Lake IJssel"),
+        ("WaddenSea",    "WaddenSea.png",      "Wadden Sea"),
     ]
 
     rows = "".join(row(area, img, label) for area, img, label in areas)

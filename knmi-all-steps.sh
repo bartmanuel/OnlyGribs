@@ -108,8 +108,9 @@ echo "[5/5] Generating download overview page..."
 python3 generate_overview.py
 
 if [ "$DO_UPLOAD" = true ]; then
-    echo "[5/5] Uploading grib files and overview page to Google Storage..."
+    echo "[5/5] Uploading grib files, images, and overview page to Google Storage..."
     gsutil -m cp ./downloads/KNMI43-*.grib gs://weatherfiles.com
+    gsutil -m cp ./img/* gs://weatherfiles.com/img/
     gsutil -h "Content-Type:text/html" cp downloadoverview.html gs://weatherfiles.com
     echo "[5/5] Upload complete."
 else

@@ -86,7 +86,11 @@ grib_copy  -w P1=0/1/2/3/4/5/6/7/8/9/10/11/12/13/14/15/16/17/18/19/20/21/22/23/2
 
 mv KNMI43-* ./downloads/
 
+# Generate download overview page
+python3 generate_overview.py
+
 #upload to Google Storage, as backend of website www.weatherfiles.com
-echo "Uploading grib files to Google Storage"
+echo "Uploading grib files and overview page to Google Storage"
 gsutil -m cp ./downloads/KNMI43-*.grib gs://weatherfiles.com
+gsutil -h "Content-Type:text/html" cp downloadoverview.html gs://weatherfiles.com
 echo "Upload complete"

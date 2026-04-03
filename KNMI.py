@@ -1,6 +1,9 @@
+import json
 import logging
 import os
+import re
 import sys
+from datetime import datetime, timezone
 
 import requests
 
@@ -62,7 +65,27 @@ def main():
 
     for responseitem in response["files"]:
         latest_file = responseitem.get("filename")
+        knmi_publication_time = responseitem.get("created")
         logger.info(f"Latest file is: {latest_file}")
+
+        # Extract model reference time from filename e.g. HARM43_V1_P1_2026040312.tar
+        match = re.search(r'(\d{10})\.tar$', latest_file)
+        if match:
+            dt_str = match.group(1)  # e.g. 2026040312
+            model_reference_time = datetime.strptime(dt_str, "%Y%m%d%H").replace(tzinfo=timezone.utc).isoformat()
+        else:
+            model_reference_time = None
+
+        # Save metadata for use by generate_overview.py
+        meta = {
+            "model_reference_time": model_reference_time,
+            "knmi_publication_time": knmi_publication_time,
+            "latest_filename": latest_file,
+        }
+        with open("pipeline_meta.json", "w") as f:
+            json.dump(meta, f, indent=2)
+        logger.info(f"Saved pipeline metadata: {meta}")
+
         # fetch the download url and download the file
         response2 = api.get_file_url(dataset_name, dataset_version, latest_file)
         download_file_from_temporary_download_url(response2["temporaryDownloadUrl"], "KNMIdownload.tar")

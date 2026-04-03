@@ -16,11 +16,15 @@ for arg in "$@"; do
     esac
 done
 
+# ── Paths ───────────────────────────────────────────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+cd "$SCRIPT_DIR"
+
 # ── Raspberry Pi environment setup ─────────────────────────────────────────
 RUNNING_ON_PI=false
 
 if [ "$RUNNING_ON_PI" = true ]; then
-    cd /home/pi/Scripts/Gribs
     export LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu:$LD_LIBRARY_PATH
     if [ -f '/home/pi/google-cloud-sdk/path.bash.inc' ]; then . '/home/pi/google-cloud-sdk/path.bash.inc'; fi
     if [ -f '/home/pi/google-cloud-sdk/completion.bash.inc' ]; then . '/home/pi/google-cloud-sdk/completion.bash.inc'; fi
@@ -127,11 +131,11 @@ if [ "$DO_UPLOAD" = true ]; then
     echo "[5/5] Uploading grib files, images, and overview page to Google Storage..."
     gsutil -m cp ./downloads/KNMI43-*.grib gs://weatherfiles.com
     gsutil -m cp ./img/* gs://weatherfiles.com/img/
-    gsutil -h "Content-Type:text/html" cp index.html gs://weatherfiles.com
-    gsutil -h "Content-Type:text/html" cp downloadoverview.html gs://weatherfiles.com
+    gsutil -h "Content-Type:text/html" -h "Cache-Control:no-cache, no-store, must-revalidate" cp "$ROOT_DIR/index.html" gs://weatherfiles.com
+    gsutil -h "Content-Type:text/html" -h "Cache-Control:no-cache, no-store, must-revalidate" cp downloadoverview.html gs://weatherfiles.com
 
     echo "[5/5] Purging Cloudflare cache..."
-    source .env
+    source "$ROOT_DIR/.env"
     curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
         -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
         -H "Content-Type: application/json" \

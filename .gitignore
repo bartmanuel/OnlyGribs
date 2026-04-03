@@ -10,11 +10,10 @@
 extracted/
 downloads/
 
-# Images
-img/
-
 # Credentials
 .env
 
 # macOS
 .DS_Store
+pipeline_meta.json
+grep

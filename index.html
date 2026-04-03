@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Weatherfiles.com | High-Resolution Meteorological Archive</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "outline": "#757c7d",
+                "on-surface": "#2d3435",
+                "primary": "#0054d6",
+                "on-surface-variant": "#5a6061",
+                "background": "#f9f9f9",
+                "surface": "#f9f9f9",
+                "surface-container-low": "#f2f4f4",
+                "surface-container-high": "#e4e9ea",
+                "surface-container-highest": "#dde4e5",
+                "outline-variant": "#adb3b4"
+            },
+            "borderRadius": {
+                "DEFAULT": "0px"
+            },
+            "fontFamily": {
+                "sans": ["Inter", "sans-serif"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f9f9f9; color: #2d3435; text-rendering: optimizeLegibility; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; display: inline-block; vertical-align: middle; }
+        .model-btn.active { border-left: 4px solid #0054d6; background-color: #ebeeef; }
+        /* Optimized for fast rendering */
+        img { content-visibility: auto; }
+        .grid-bg { background-image: radial-gradient(circle, #000 1px, transparent 1px); background-size: 48px 48px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased">
+<!-- Block 1: Header & Hero -->
+<header class="bg-surface/95 backdrop-blur-sm border-b border-outline-variant/20 flex justify-between items-center w-full px-6 py-4 sticky top-0 z-50">
+<a class="text-xl font-bold tracking-tight" href="/">Weatherfiles.com</a>
+<nav class="hidden md:flex gap-8 items-center">
+<a class="text-[0.6875rem] font-bold uppercase tracking-widest text-primary border-b-2 border-primary pb-1" href="#">Archive</a>
+<a class="text-[0.6875rem] font-bold uppercase tracking-widest text-on-surface/70 hover:text-primary transition-colors" href="#">Stations</a>
+<a class="text-[0.6875rem] font-bold uppercase tracking-widest text-on-surface/70 hover:text-primary transition-colors" href="#">Global</a>
+</nav>
+<div class="flex items-center">
+<div class="bg-surface-container-low px-3 py-1 flex items-center gap-2 border border-outline-variant/20">
+<span class="material-symbols-outlined text-sm opacity-50">search</span>
+<input class="bg-transparent border-none text-[0.6875rem] uppercase tracking-wider focus:ring-0 w-32 p-0" placeholder="STATION ID..." type="text"/>
+</div>
+</div>
+</header>
+<main>
+<section class="px-6 py-16 max-w-7xl mx-auto">
+<div class="max-w-4xl">
+<span class="text-[0.6875rem] text-primary font-extrabold uppercase tracking-widest block mb-4">System Status: Operational</span>
+<h1 class="text-4xl md:text-6xl font-extrabold tracking-tighter mb-6 leading-none">GREATER EUROPE METEOROLOGICAL ARCHIVE.</h1>
+<p class="text-lg text-on-surface-variant max-w-2xl leading-relaxed">
+                High-resolution deterministic weather models for the Atlantic, Mediterranean, and Nordic regions. Pure data access for professional forecasting and maritime navigation. No telemetry. No cookies.
+            </p>
+</div>
+</section>
+<!-- Block 2: Interactive Data Explorer -->
+<section class="border-y border-outline-variant grid grid-cols-1 md:grid-cols-12 min-h-[600px]">
+<!-- Left Column (4/12): Model Selection -->
+<aside class="md:col-span-4 border-r border-outline-variant flex flex-col bg-surface-container-low">
+<div class="p-6 border-b border-outline-variant bg-surface-container-highest">
+<h2 class="text-[0.625rem] font-black uppercase tracking-[0.2em] text-primary">Select Atmospheric Model</h2>
+</div>
+<nav class="flex-1 overflow-y-auto">
+<button class="model-btn active w-full text-left p-6 flex justify-between items-center transition-colors">
+<div>
+<div class="text-lg font-bold leading-tight">GFS</div>
+<div class="text-[10px] text-on-surface-variant font-mono uppercase tracking-tight">Global Forecast System</div>
+</div>
+<span class="material-symbols-outlined text-primary">chevron_right</span>
+</button>
+<button class="model-btn w-full text-left p-6 border-b border-outline-variant/30 hover:bg-surface-container-high transition-colors flex justify-between items-center">
+<div>
+<div class="text-lg font-bold leading-tight">ECMWF</div>
+<div class="text-[10px] text-on-surface-variant font-mono uppercase tracking-tight">Euro Centre Medium-Range</div>
+</div>
+<span class="material-symbols-outlined text-outline/40">chevron_right</span>
+</button>
+<button class="model-btn w-full text-left p-6 border-b border-outline-variant/30 hover:bg-surface-container-high transition-colors flex justify-between items-center">
+<div>
+<div class="text-lg font-bold leading-tight">ICON</div>
+<div class="text-[10px] text-on-surface-variant font-mono uppercase tracking-tight">DWD Global/Regional</div>
+</div>
+<span class="material-symbols-outlined text-outline/40">chevron_right</span>
+</button>
+<button class="model-btn w-full text-left p-6 border-b border-outline-variant/30 hover:bg-surface-container-high transition-colors flex justify-between items-center">
+<div>
+<div class="text-lg font-bold leading-tight">ARPEGE</div>
+<div class="text-[10px] text-on-surface-variant font-mono uppercase tracking-tight">Météo-France Synoptic</div>
+</div>
+<span class="material-symbols-outlined text-outline/40">chevron_right</span>
+</button>
+</nav>
+<div class="p-6 bg-surface-container-highest border-t border-outline-variant">
+<h3 class="text-[10px] font-bold uppercase tracking-wider mb-4 opacity-60">GFS Detail Pane</h3>
+<div class="grid grid-cols-2 gap-4 font-mono text-[11px]">
+<div>
+<div class="text-on-surface-variant uppercase mb-1">Resolution</div>
+<div class="font-bold">0.25° (~28km)</div>
+</div>
+<div>
+<div class="text-on-surface-variant uppercase mb-1">File Format</div>
+<div class="font-bold">GRIB2 / IEEE</div>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/30">
+<p class="text-[11px] leading-snug text-on-surface-variant">Primary US atmospheric model. 4 daily updates. Global coverage with 127 vertical levels.</p>
+</div>
+</div>
+</aside>
+<!-- Right Column (8/12): Coverage Map -->
+<div class="md:col-span-8 relative bg-[#fff] overflow-hidden flex flex-col min-h-[400px]">
+<div class="absolute top-6 left-6 z-10 bg-white/90 border border-outline-variant p-4 backdrop-blur-sm shadow-sm">
+<h3 class="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Coverage: GFS Global</h3>
+<code class="text-[9px] text-on-surface-variant uppercase">GRID: 180.0W-180.0E / 90.0N-90.0S</code>
+</div>
+<div class="flex-1 relative">
+<img alt="High-contrast monochrome meteorological map" class="w-full h-full object-cover grayscale contrast-125 opacity-40" loading="lazy" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDinaS2c0HRfem1r-rvrUB-9BOJQWokeY3TQGy_7P8MxkoyFFvC19imM4COeSYAzqkkqzt5mnfbGa-NyxchDFRRFYVtI37-sSjq6LhuUtgUT7o6aguvUMCHHLbPlK6ifgFluk1Lm24z2ueQSd7NnjuuUQn9yppAv2VhC66v6oEAbR6BReQ9E4GsHmAdxDeRbaX6oYs1KFdEr3N3zOVGuKrmwmxfG3yHy9pIj9vcVHoCCsWGTfGfd9eryl0t-YWu68hQZ1AwdMpDm54"/>
+<div class="absolute inset-0 border-[40px] border-primary/5 pointer-events-none"></div>
+<div class="absolute inset-0 grid-bg opacity-10 pointer-events-none"></div>
+<div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+<div class="border-2 border-primary bg-white/95 px-8 py-3 text-xs font-black tracking-[0.4em] uppercase shadow-lg">Global Deterministic Domain</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Block 3: Documentation & Footer -->
+<section class="bg-surface-container-low/30 border-t border-outline-variant">
+<div class="max-w-7xl mx-auto px-6 py-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
+<div>
+<h4 class="text-[11px] font-black uppercase tracking-widest mb-6">Archive Architecture</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed font-mono">
+                    Direct-to-disk repository for raw meteorological data. We provide bit-for-bit parity GRIB2 files from NOAA, ECMWF, and DWD without intermediate processing.
+                </p>
+</div>
+<div>
+<h4 class="text-[11px] font-black uppercase tracking-widest mb-6">Licensing</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed font-mono">
+                    All data is subject to the source agency's open data policies. Commercial redistribution of raw streams may require additional attribution or registration.
+                </p>
+</div>
+<div>
+<h4 class="text-[11px] font-black uppercase tracking-widest mb-6">Terminal Access</h4>
+<ul class="text-xs text-on-surface-variant space-y-3 font-mono uppercase">
+<li><a class="hover:text-primary transition-colors flex items-center gap-2" href="#"><span class="material-symbols-outlined text-sm">api</span> API Documentation</a></li>
+<li><a class="hover:text-primary transition-colors flex items-center gap-2" href="#"><span class="material-symbols-outlined text-sm">terminal</span> CLI Tooling</a></li>
+<li><a class="hover:text-primary transition-colors flex items-center gap-2" href="#"><span class="material-symbols-outlined text-sm">shield</span> NOC Security</a></li>
+</ul>
+</div>
+<div>
+<h4 class="text-[11px] font-black uppercase tracking-widest mb-6">Real-time Metrics</h4>
+<div class="text-[10px] font-mono space-y-2">
+<div class="flex justify-between border-b border-outline-variant/10 pb-1">
+<span class="opacity-60">STORAGE POOL</span>
+<span class="font-bold">142.4 PB</span>
+</div>
+<div class="flex justify-between border-b border-outline-variant/10 pb-1">
+<span class="opacity-60">INGEST RATE</span>
+<span class="font-bold">850 GB/24H</span>
+</div>
+<div class="flex justify-between">
+<span class="opacity-60">SLA UPTIME</span>
+<span class="font-bold text-green-600">99.998%</span>
+</div>
+</div>
+</div>
+</div>
+<footer class="px-6 py-8 border-t border-outline-variant flex flex-col md:grid md:grid-cols-2 items-center gap-6 bg-surface">
+<div class="text-[10px] font-bold tracking-tight uppercase order-2 md:order-1 opacity-60">
+                © 2024 WEATHERFILES.COM — PUBLIC DATA ARCHIVE
+            </div>
+<nav class="flex gap-6 text-[10px] font-black tracking-[0.15em] uppercase order-1 md:order-2 md:justify-end">
+<a class="hover:text-primary transition-colors" href="#">Top</a>
+<a class="hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms</a>
+<a class="hover:text-primary transition-colors" href="#">Contact</a>
+</nav>
+</footer>
+</section>
+</main>
+</body></html>

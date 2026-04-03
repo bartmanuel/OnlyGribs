@@ -19,6 +19,7 @@ done
 # ── Paths ───────────────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+WWW_DIR="$ROOT_DIR/www"
 cd "$SCRIPT_DIR"
 
 # ── Raspberry Pi environment setup ─────────────────────────────────────────
@@ -129,9 +130,10 @@ python3 generate_overview.py
 
 if [ "$DO_UPLOAD" = true ]; then
     echo "[5/5] Uploading grib files, images, and overview page to Google Storage..."
-    gsutil -m cp ./downloads/KNMI43-*.grib gs://weatherfiles.com
-    gsutil -m cp ./img/* gs://weatherfiles.com/img/
-    gsutil -h "Content-Type:text/html" -h "Cache-Control:no-cache, no-store, must-revalidate" cp index.html gs://weatherfiles.com
+    gsutil -m cp ./downloads/KNMI43-*.grib gs://weatherfiles.com/models/harm-nl-2km/
+    gsutil -m cp "$WWW_DIR/models/harm-nl-2km/img/"* gs://weatherfiles.com/models/harm-nl-2km/img/
+    gsutil -h "Content-Type:text/html" -h "Cache-Control:no-cache, no-store, must-revalidate" cp "$WWW_DIR/index.html" gs://weatherfiles.com
+    gsutil -h "Content-Type:text/html" -h "Cache-Control:no-cache, no-store, must-revalidate" cp "$WWW_DIR/models/harm-nl-2km/index.html" gs://weatherfiles.com/models/harm-nl-2km/
 
     echo "[5/5] Purging Cloudflare cache..."
     source "$ROOT_DIR/.env"

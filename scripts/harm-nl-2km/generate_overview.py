@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
+ROOT_DIR = SCRIPT_DIR.parent.parent
+WWW_DIR = ROOT_DIR / "www"
 
 # File sizes are fixed for a given area/time/param selection and don't change between runs.
 FILE_SIZES = {
@@ -114,7 +116,7 @@ def main():
 </html>
 """
 
-    with open(SCRIPT_DIR / "index.html", "w") as f:
+    with open(WWW_DIR / "models" / "harm-nl-2km" / "index.html", "w") as f:
         f.write(html)
 
     print("Generated index.html")

@@ -48,7 +48,7 @@ def file_link(area, timewindow, paramset):
     filename = f"KNMI43-{area}-{timewindow}-{paramset}.grib"
     size = FILE_SIZES.get(filename, "")
     size_str = f' <span style="color:#888;font-size:0.85em">({size})</span>' if size else ""
-    return f'<a href="{filename}">{filename}</a>{size_str}'
+    return f'<a href="downloads/{filename}">{filename}</a>{size_str}'
 
 
 def row(area, img, label):

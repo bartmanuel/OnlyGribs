@@ -146,4 +146,8 @@ else
     echo "[5/5] Skipping upload."
 fi
 
+# ── Cleanup ─────────────────────────────────────────────────────────────────
+rm -f ./extracted/HA43*
+echo "Cleaned up extracted files."
+
 echo "Done."

@@ -55,7 +55,7 @@ cat ./extracted/arome__001__SP2__*H__*.grib2 > AROME_SP2_alltime.grib2
 grib_copy -w shortName=10u/10v   AROME_SP1_alltime.grib2 AROME_Wind.grib2
 grib_copy -w shortName=2t        AROME_SP1_alltime.grib2 AROME_Temperature.grib2
 grib_copy -w shortName=2r        AROME_SP1_alltime.grib2 AROME_Humidity.grib2
-grib_copy -w shortName=10efg/10nfg AROME_SP1_alltime.grib2 AROME_GustComponents.grib2
+grib_copy -w shortName=max_10efg/max_10nfg AROME_SP1_alltime.grib2 AROME_GustComponents.grib2
 python3 CombineGusts_GRIB2.py AROME_GustComponents.grib2 AROME_Gusts.grib2
 
 # Extract per-parameter files from SP2

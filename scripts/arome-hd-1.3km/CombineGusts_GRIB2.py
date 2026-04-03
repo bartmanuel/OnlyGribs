@@ -26,8 +26,8 @@ def read_by_shortname(filepath, shortname):
 
 
 def main(input_file, output_file):
-    u_handles, u_values = read_by_shortname(input_file, "10efg")
-    v_handles, v_values = read_by_shortname(input_file, "10nfg")
+    u_handles, u_values = read_by_shortname(input_file, "max_10efg")
+    v_handles, v_values = read_by_shortname(input_file, "max_10nfg")
 
     if len(u_values) != len(v_values):
         print(f"Mismatch: {len(u_values)} 10efg vs {len(v_values)} 10nfg messages")

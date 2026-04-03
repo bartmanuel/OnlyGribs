@@ -21,9 +21,9 @@ fi
 echo "Starting script"
 
 # Download files from the KNMI OpenData API
-# python3 KNMI.py
-#rm ./extracted/HA43*
-#tar -xvf KNMIdownload.tar
+python3 KNMI.py
+rm -f ./extracted/HA43*
+tar -xvf KNMIdownload.tar
 echo "Extracted files from KNMIdownload.tar"
 mv HA43* ./extracted/
 echo "Moved files to ./extracted/"
@@ -87,6 +87,6 @@ grib_copy  -w P1=0/1/2/3/4/5/6/7/8/9/10/11/12/13/14/15/16/17/18/19/20/21/22/23/2
 mv KNMI43-* ./downloads/
 
 #upload to Google Storage, as backend of website www.weatherfiles.com
-echo "Uploading KNMI43All.grib to Google Storage"
-# TODO: Change to new naming
-# gsutil cp -r KNMI43All.grib  gs://weatherfiles.com
+echo "Uploading grib files to Google Storage"
+gsutil -m cp ./downloads/KNMI43-*.grib gs://weatherfiles.com
+echo "Upload complete"

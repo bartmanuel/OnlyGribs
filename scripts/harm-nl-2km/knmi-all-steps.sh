@@ -121,8 +121,8 @@ for AREA in $AREAS; do
     grib_copy -w "$NEXTDAY" KNMI43-${AREA}-alltime-windonly.grib KNMI43-${AREA}-nextday-windonly.grib
 done
 
-mv KNMI43-* ./downloads/
-echo "[4/5] Slicing complete. 28 files written to ./downloads/"
+mv KNMI43-* "$WWW_DIR/models/harm-nl-2km/downloads/"
+echo "[4/5] Slicing complete. 28 files written to www/models/harm-nl-2km/downloads/"
 
 # ── Step 5: Generate overview page and upload ───────────────────────────────
 echo "[5/5] Generating download overview page..."
@@ -130,7 +130,7 @@ python3 generate_overview.py
 
 if [ "$DO_UPLOAD" = true ]; then
     echo "[5/5] Uploading grib files, images, and overview page to Google Storage..."
-    gsutil -m cp ./downloads/KNMI43-*.grib gs://weatherfiles.com/models/harm-nl-2km/
+    gsutil -m cp "$WWW_DIR/models/harm-nl-2km/downloads/KNMI43-*.grib" gs://weatherfiles.com/models/harm-nl-2km/
     gsutil -m cp "$WWW_DIR/models/harm-nl-2km/img/"* gs://weatherfiles.com/models/harm-nl-2km/img/
     gsutil -h "Content-Type:text/html" -h "Cache-Control:no-cache, no-store, must-revalidate" cp "$WWW_DIR/index.html" gs://weatherfiles.com
     gsutil -h "Content-Type:text/html" -h "Cache-Control:no-cache, no-store, must-revalidate" cp "$WWW_DIR/models/harm-nl-2km/index.html" gs://weatherfiles.com/models/harm-nl-2km/

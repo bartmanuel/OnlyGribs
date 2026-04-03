@@ -1,5 +1,8 @@
 import json
 from datetime import datetime, timezone
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).parent
 
 # File sizes are fixed for a given area/time/param selection and don't change between runs.
 FILE_SIZES = {
@@ -63,7 +66,7 @@ def row(area, img, label):
 
 
 def main():
-    with open("pipeline_meta.json") as f:
+    with open(SCRIPT_DIR / "pipeline_meta.json") as f:
         meta = json.load(f)
 
     model_reference_time = format_utc(meta["model_reference_time"])
@@ -111,7 +114,7 @@ def main():
 </html>
 """
 
-    with open("downloadoverview.html", "w") as f:
+    with open(SCRIPT_DIR / "downloadoverview.html", "w") as f:
         f.write(html)
 
     print("Generated downloadoverview.html")

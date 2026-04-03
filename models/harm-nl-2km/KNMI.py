@@ -4,8 +4,11 @@ import os
 import re
 import sys
 from datetime import datetime, timezone
+from pathlib import Path
 
 import requests
+
+SCRIPT_DIR = Path(__file__).parent
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -82,7 +85,7 @@ def main():
             "knmi_publication_time": knmi_publication_time,
             "latest_filename": latest_file,
         }
-        with open("pipeline_meta.json", "w") as f:
+        with open(SCRIPT_DIR / "pipeline_meta.json", "w") as f:
             json.dump(meta, f, indent=2)
         logger.info(f"Saved pipeline metadata: {meta}")
 

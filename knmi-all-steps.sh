@@ -112,6 +112,14 @@ if [ "$DO_UPLOAD" = true ]; then
     gsutil -m cp ./downloads/KNMI43-*.grib gs://weatherfiles.com
     gsutil -m cp ./img/* gs://weatherfiles.com/img/
     gsutil -h "Content-Type:text/html" cp downloadoverview.html gs://weatherfiles.com
+
+    echo "[5/5] Purging Cloudflare cache..."
+    source .env
+    curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
+        -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+        -H "Content-Type: application/json" \
+        --data '{"purge_everything":true}' | python3 -c "import sys,json; r=json.load(sys.stdin); print('Cache purged OK' if r['success'] else f'Cache purge failed: {r[\"errors\"]}')"
+
     echo "[5/5] Upload complete."
 else
     echo "[5/5] Skipping upload."

@@ -9,7 +9,7 @@
 # Directories with downloaded/processed data
 downloaded/
 extracted/
-sliced/
+downloads/
 
 # Credentials
 .env

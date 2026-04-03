@@ -115,8 +115,8 @@ for AREA in $AREAS; do
     grib_copy -w "$NEXTDAY" "AROME-${AREA}-alltime-windonly.grib2" "AROME-${AREA}-nextday-windonly.grib2"
 done
 
-mv AROME-* ./sliced/
-echo "[4/5] Slicing complete. 28 files written to ./sliced/"
+mv AROME-* "$WWW_DIR/models/arome-hd-1.3km/downloads/"
+echo "[4/5] Slicing complete. 28 files written to www/models/arome-hd-1.3km/downloads/"
 
 # ── Step 5: Generate overview page and upload ───────────────────────────────
 echo "[5/5] Generating download overview page..."
@@ -124,7 +124,7 @@ python3 generate_overview.py
 
 if [ "$DO_UPLOAD" = true ]; then
     echo "[5/5] Uploading grib files, images, and overview page to Google Storage..."
-    gsutil -m cp ./sliced/AROME-*.grib2 gs://weatherfiles.com/models/arome-hd-1.3km/downloads/
+    gsutil -m cp "$WWW_DIR/models/arome-hd-1.3km/downloads/AROME-*.grib2" gs://weatherfiles.com/models/arome-hd-1.3km/downloads/
     gsutil -m cp "$WWW_DIR/models/arome-hd-1.3km/img/"* gs://weatherfiles.com/models/arome-hd-1.3km/img/
     gsutil -h "Content-Type:text/html" -h "Cache-Control:no-cache, no-store, must-revalidate" cp "$WWW_DIR/models/arome-hd-1.3km/index.html" gs://weatherfiles.com/models/arome-hd-1.3km/
 

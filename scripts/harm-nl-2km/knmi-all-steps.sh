@@ -35,9 +35,10 @@ fi
 if [ "$DO_DOWNLOAD" = true ]; then
     echo "[1/5] Downloading latest KNMI model file..."
     python3 KNMI.py
-    rm -f ./extracted/HA43*
+    rm -f ./downloaded/HA43*
     tar -xvf KNMIdownload.tar
-    mv HA43* ./extracted/
+    mv HA43* ./downloaded/
+    mv KNMIdownload.tar ./downloaded/
     echo "[1/5] Download and extraction complete."
 else
     echo "[1/5] Skipping download."
@@ -46,36 +47,36 @@ fi
 # ── Step 2: Convert raw model output to per-parameter grib files ────────────
 echo "[2/5] Converting raw model output to per-parameter grib files..."
 
-grib_copy  -w indicatorOfParameter=33/34,level=10 ./extracted/HA43* KNMI43Wind.grib
-grib_copy  -w indicatorOfParameter=11,level=2     ./extracted/HA43* KNMI43Temperature.grib
-grib_copy  -w indicatorOfParameter=17             ./extracted/HA43* KNMI43DewPointTemp.grib
-grib_copy  -w indicatorOfParameter=61             ./extracted/HA43* KNMI43Precipitation.grib
+grib_copy  -w indicatorOfParameter=33/34,level=10 ./downloaded/HA43* ./extracted/KNMI43Wind.grib
+grib_copy  -w indicatorOfParameter=11,level=2     ./downloaded/HA43* ./extracted/KNMI43Temperature.grib
+grib_copy  -w indicatorOfParameter=17             ./downloaded/HA43* ./extracted/KNMI43DewPointTemp.grib
+grib_copy  -w indicatorOfParameter=61             ./downloaded/HA43* ./extracted/KNMI43Precipitation.grib
 
 # Pressure: reassign level type to mean sea level
-grib_filter -o KNMI43Pressure.grib fix_pressure_filter.txt ./extracted/HA43*
+grib_filter -o ./extracted/KNMI43Pressure.grib fix_pressure_filter.txt ./downloaded/HA43*
 
 # Humidity: extract fraction, then scale to percentage
-grib_copy  -w indicatorOfParameter=52 ./extracted/HA43* KNMI43HumidityFraction.grib
-python3 ScaleFraction.py KNMI43HumidityFraction.grib KNMI43Humidity.grib
+grib_copy  -w indicatorOfParameter=52 ./downloaded/HA43* ./extracted/KNMI43HumidityFraction.grib
+python3 ScaleFraction.py ./extracted/KNMI43HumidityFraction.grib ./extracted/KNMI43Humidity.grib
 
 # Gusts: extract U+V components, combine into magnitude
-grib_copy  -w indicatorOfParameter=162 ./extracted/HA43* KNMI43GustU.grib
-grib_copy  -w indicatorOfParameter=163 ./extracted/HA43* KNMI43GustV.grib
-python3 CombineGusts.py KNMI43GustU.grib KNMI43GustV.grib KNMI43Gusts.grib
+grib_copy  -w indicatorOfParameter=162 ./downloaded/HA43* ./extracted/KNMI43GustU.grib
+grib_copy  -w indicatorOfParameter=163 ./downloaded/HA43* ./extracted/KNMI43GustV.grib
+python3 CombineGusts.py ./extracted/KNMI43GustU.grib ./extracted/KNMI43GustV.grib ./extracted/KNMI43Gusts.grib
 
 # Cloud cover: extract, fix level metadata, scale to percentage
-grib_copy  -w indicatorOfParameter=71 ./extracted/HA43* KNMI43CloudCoverRaw.grib
-grib_filter -o KNMI43CloudCoverFraction.grib fix_tcdc_filter.txt KNMI43CloudCoverRaw.grib
-python3 ScaleFraction.py KNMI43CloudCoverFraction.grib KNMI43CloudCover.grib
+grib_copy  -w indicatorOfParameter=71 ./downloaded/HA43* ./extracted/KNMI43CloudCoverRaw.grib
+grib_filter -o ./extracted/KNMI43CloudCoverFraction.grib fix_tcdc_filter.txt ./extracted/KNMI43CloudCoverRaw.grib
+python3 ScaleFraction.py ./extracted/KNMI43CloudCoverFraction.grib ./extracted/KNMI43CloudCover.grib
 
 echo "[2/5] Per-parameter conversion complete."
 
 # ── Step 3: Combine into ModelArea master file ─────────────────────────────
 echo "[3/5] Combining parameters into ModelArea master grib file..."
 
-grib_copy KNMI43Wind.grib KNMI43Temperature.grib KNMI43DewPointTemp.grib \
-    KNMI43Precipitation.grib KNMI43Pressure.grib KNMI43Humidity.grib \
-    KNMI43Gusts.grib KNMI43CloudCover.grib \
+grib_copy ./extracted/KNMI43Wind.grib ./extracted/KNMI43Temperature.grib ./extracted/KNMI43DewPointTemp.grib \
+    ./extracted/KNMI43Precipitation.grib ./extracted/KNMI43Pressure.grib ./extracted/KNMI43Humidity.grib \
+    ./extracted/KNMI43Gusts.grib ./extracted/KNMI43CloudCover.grib \
     KNMI43-ModelArea-alltime-allparams.grib
 
 echo "[3/5] Master file created."
@@ -85,7 +86,7 @@ echo "[4/5] Slicing into area, time-window, and parameter subsets..."
 
 AREAS="ModelArea Zealand NorthSea Channel WaddenSea NorthSeaSouth LakeIJssel"
 NEXTDAY="P1=0/1/2/3/4/5/6/7/8/9/10/11/12/13/14/15/16/17/18/19/20/21/22/23/24/25/26/27/28/29/30"
-PARAMS="KNMI43Wind.grib KNMI43Temperature.grib KNMI43DewPointTemp.grib KNMI43Precipitation.grib KNMI43Pressure.grib KNMI43Humidity.grib KNMI43Gusts.grib KNMI43CloudCover.grib"
+PARAMS="./extracted/KNMI43Wind.grib ./extracted/KNMI43Temperature.grib ./extracted/KNMI43DewPointTemp.grib ./extracted/KNMI43Precipitation.grib ./extracted/KNMI43Pressure.grib ./extracted/KNMI43Humidity.grib ./extracted/KNMI43Gusts.grib ./extracted/KNMI43CloudCover.grib"
 
 # Slice each parameter individually by area then combine — avoids CDO dropping
 # parameters when processing a multi-parameter GRIB1 file over small areas.
@@ -95,7 +96,7 @@ slice_area() {
     local TMPDIR=$(mktemp -d)
     local SLICED=()
     for PARAM in $PARAMS; do
-        local OUT="$TMPDIR/${PARAM}"
+        local OUT="$TMPDIR/$(basename $PARAM)"
         cdo sellonlatbox,$BBOX "$PARAM" "$OUT" 2>/dev/null
         SLICED+=("$OUT")
     done
@@ -121,8 +122,8 @@ for AREA in $AREAS; do
     grib_copy -w "$NEXTDAY" KNMI43-${AREA}-alltime-windonly.grib KNMI43-${AREA}-nextday-windonly.grib
 done
 
-mv KNMI43-* "$WWW_DIR/models/harm-nl-2km/downloads/"
-echo "[4/5] Slicing complete. 28 files written to www/models/harm-nl-2km/downloads/"
+mv KNMI43-* ./sliced/
+echo "[4/5] Slicing complete. 28 files written to ./sliced/"
 
 # ── Step 5: Generate overview page and upload ───────────────────────────────
 echo "[5/5] Generating download overview page..."
@@ -130,7 +131,7 @@ python3 generate_overview.py
 
 if [ "$DO_UPLOAD" = true ]; then
     echo "[5/5] Uploading grib files, images, and overview page to Google Storage..."
-    gsutil -m cp "$WWW_DIR/models/harm-nl-2km/downloads/KNMI43-*.grib" gs://weatherfiles.com/models/harm-nl-2km/downloads/
+    gsutil -m cp ./sliced/KNMI43-*.grib gs://weatherfiles.com/models/harm-nl-2km/downloads/
     gsutil -m cp "$WWW_DIR/models/harm-nl-2km/img/"* gs://weatherfiles.com/models/harm-nl-2km/img/
     gsutil -h "Content-Type:text/html" -h "Cache-Control:no-cache, no-store, must-revalidate" cp "$WWW_DIR/index.html" gs://weatherfiles.com
     gsutil -h "Content-Type:text/html" -h "Cache-Control:no-cache, no-store, must-revalidate" cp "$WWW_DIR/models/harm-nl-2km/index.html" gs://weatherfiles.com/models/harm-nl-2km/
@@ -148,7 +149,7 @@ else
 fi
 
 # ── Cleanup ─────────────────────────────────────────────────────────────────
-rm -f ./extracted/HA43*
-echo "Cleaned up extracted files."
+rm -f ./downloaded/HA43*
+echo "Cleaned up downloaded files."
 
 echo "Done."

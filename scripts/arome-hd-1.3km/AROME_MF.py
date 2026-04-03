@@ -8,7 +8,7 @@ import requests
 import xml.etree.ElementTree as ET
 
 SCRIPT_DIR = Path(__file__).parent
-EXTRACTED_DIR = SCRIPT_DIR / "extracted"
+EXTRACTED_DIR = SCRIPT_DIR / "downloaded"
 BUCKET_BASE = "https://object.data.gouv.fr/meteofrance-pnt"
 S3_NS = {"s3": "http://s3.amazonaws.com/doc/2006-03-01/"}
 

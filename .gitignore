@@ -7,8 +7,9 @@
 *.tar
 
 # Directories with downloaded/processed data
+downloaded/
 extracted/
-downloads/
+sliced/
 
 # Credentials
 .env

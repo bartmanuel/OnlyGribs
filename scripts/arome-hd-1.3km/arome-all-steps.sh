@@ -34,8 +34,7 @@ fi
 # ── Step 1: Download ────────────────────────────────────────────────────────
 if [ "$DO_DOWNLOAD" = true ]; then
     echo "[1/5] Downloading latest AROME HD model files..."
-    mkdir -p ./extracted
-    rm -f ./extracted/arome__001__*.grib2
+    rm -f ./downloaded/arome__001__*.grib2
     python3 AROME_MF.py
     echo "[1/5] Download complete."
 else
@@ -46,31 +45,31 @@ fi
 echo "[2/5] Converting to per-parameter grib files..."
 
 # Combine all hourly SP1 files (wind, temp, humidity, gusts) into one
-cat ./extracted/arome__001__SP1__*H__*.grib2 > AROME_SP1_alltime.grib2
+cat ./downloaded/arome__001__SP1__*H__*.grib2 > ./extracted/AROME_SP1_alltime.grib2
 
 # Combine all hourly SP2 files (precip, cloud, pressure) into one
-cat ./extracted/arome__001__SP2__*H__*.grib2 > AROME_SP2_alltime.grib2
+cat ./downloaded/arome__001__SP2__*H__*.grib2 > ./extracted/AROME_SP2_alltime.grib2
 
 # Extract per-parameter files from SP1
-grib_copy -w shortName=10u/10v   AROME_SP1_alltime.grib2 AROME_Wind.grib2
-grib_copy -w shortName=2t        AROME_SP1_alltime.grib2 AROME_Temperature.grib2
-grib_copy -w shortName=2r        AROME_SP1_alltime.grib2 AROME_Humidity.grib2
-grib_copy -w shortName=max_10efg/max_10nfg AROME_SP1_alltime.grib2 AROME_GustComponents.grib2
-python3 CombineGusts_GRIB2.py AROME_GustComponents.grib2 AROME_Gusts.grib2
+grib_copy -w shortName=10u/10v              ./extracted/AROME_SP1_alltime.grib2 ./extracted/AROME_Wind.grib2
+grib_copy -w shortName=2t                   ./extracted/AROME_SP1_alltime.grib2 ./extracted/AROME_Temperature.grib2
+grib_copy -w shortName=2r                   ./extracted/AROME_SP1_alltime.grib2 ./extracted/AROME_Humidity.grib2
+grib_copy -w shortName=max_10efg/max_10nfg  ./extracted/AROME_SP1_alltime.grib2 ./extracted/AROME_GustComponents.grib2
+python3 CombineGusts_GRIB2.py ./extracted/AROME_GustComponents.grib2 ./extracted/AROME_Gusts.grib2
 
 # Extract per-parameter files from SP2
-grib_copy -w shortName=tirf      AROME_SP2_alltime.grib2 AROME_Precipitation.grib2
-grib_copy -w shortName=sp        AROME_SP2_alltime.grib2 AROME_Pressure.grib2
-grib_copy -w shortName=lcc       AROME_SP2_alltime.grib2 AROME_CloudCover.grib2
+grib_copy -w shortName=tirf ./extracted/AROME_SP2_alltime.grib2 ./extracted/AROME_Precipitation.grib2
+grib_copy -w shortName=sp   ./extracted/AROME_SP2_alltime.grib2 ./extracted/AROME_Pressure.grib2
+grib_copy -w shortName=lcc  ./extracted/AROME_SP2_alltime.grib2 ./extracted/AROME_CloudCover.grib2
 
 echo "[2/5] Per-parameter conversion complete."
 
 # ── Step 3: Combine into ModelArea master file ─────────────────────────────
 echo "[3/5] Combining parameters into ModelArea master grib file..."
 
-cat AROME_Wind.grib2 AROME_Temperature.grib2 AROME_Humidity.grib2 \
-    AROME_Gusts.grib2 AROME_Precipitation.grib2 \
-    AROME_Pressure.grib2 AROME_CloudCover.grib2 \
+cat ./extracted/AROME_Wind.grib2 ./extracted/AROME_Temperature.grib2 ./extracted/AROME_Humidity.grib2 \
+    ./extracted/AROME_Gusts.grib2 ./extracted/AROME_Precipitation.grib2 \
+    ./extracted/AROME_Pressure.grib2 ./extracted/AROME_CloudCover.grib2 \
     > AROME-ModelArea-alltime-allparams.grib2
 
 echo "[3/5] Master file created."
@@ -80,7 +79,7 @@ echo "[4/5] Slicing into area, time-window, and parameter subsets..."
 
 AREAS="ModelArea Zealand NorthSea Channel WaddenSea NorthSeaSouth LakeIJssel"
 NEXTDAY="step=0/1/2/3/4/5/6/7/8/9/10/11/12/13/14/15/16/17/18/19/20/21/22/23/24/25/26/27/28/29/30"
-PARAMS="AROME_Wind.grib2 AROME_Temperature.grib2 AROME_Humidity.grib2 AROME_Gusts.grib2 AROME_Precipitation.grib2 AROME_Pressure.grib2 AROME_CloudCover.grib2"
+PARAMS="./extracted/AROME_Wind.grib2 ./extracted/AROME_Temperature.grib2 ./extracted/AROME_Humidity.grib2 ./extracted/AROME_Gusts.grib2 ./extracted/AROME_Precipitation.grib2 ./extracted/AROME_Pressure.grib2 ./extracted/AROME_CloudCover.grib2"
 
 # Slice each parameter individually by area then combine — avoids CDO dropping
 # parameters when processing a multi-parameter GRIB file over small areas.
@@ -90,7 +89,7 @@ slice_area() {
     local TMPDIR=$(mktemp -d)
     local SLICED=()
     for PARAM in $PARAMS; do
-        local OUT="$TMPDIR/${PARAM}"
+        local OUT="$TMPDIR/$(basename $PARAM)"
         cdo sellonlatbox,$BBOX "$PARAM" "$OUT" 2>/dev/null
         SLICED+=("$OUT")
     done
@@ -116,8 +115,8 @@ for AREA in $AREAS; do
     grib_copy -w "$NEXTDAY" "AROME-${AREA}-alltime-windonly.grib2" "AROME-${AREA}-nextday-windonly.grib2"
 done
 
-mv AROME-* "$WWW_DIR/models/arome-hd-1.3km/downloads/"
-echo "[4/5] Slicing complete. 28 files written to www/models/arome-hd-1.3km/downloads/"
+mv AROME-* ./sliced/
+echo "[4/5] Slicing complete. 28 files written to ./sliced/"
 
 # ── Step 5: Generate overview page and upload ───────────────────────────────
 echo "[5/5] Generating download overview page..."
@@ -125,7 +124,7 @@ python3 generate_overview.py
 
 if [ "$DO_UPLOAD" = true ]; then
     echo "[5/5] Uploading grib files, images, and overview page to Google Storage..."
-    gsutil -m cp "$WWW_DIR/models/arome-hd-1.3km/downloads/AROME-*.grib2" gs://weatherfiles.com/models/arome-hd-1.3km/downloads/
+    gsutil -m cp ./sliced/AROME-*.grib2 gs://weatherfiles.com/models/arome-hd-1.3km/downloads/
     gsutil -m cp "$WWW_DIR/models/arome-hd-1.3km/img/"* gs://weatherfiles.com/models/arome-hd-1.3km/img/
     gsutil -h "Content-Type:text/html" -h "Cache-Control:no-cache, no-store, must-revalidate" cp "$WWW_DIR/models/arome-hd-1.3km/index.html" gs://weatherfiles.com/models/arome-hd-1.3km/
 
@@ -142,7 +141,7 @@ else
 fi
 
 # ── Cleanup ─────────────────────────────────────────────────────────────────
-rm -f ./extracted/arome__001__*.grib2
-echo "Cleaned up extracted files."
+rm -f ./downloaded/arome__001__*.grib2
+echo "Cleaned up downloaded files."
 
 echo "Done."

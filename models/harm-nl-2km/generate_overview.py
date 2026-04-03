@@ -114,10 +114,10 @@ def main():
 </html>
 """
 
-    with open(SCRIPT_DIR / "downloadoverview.html", "w") as f:
+    with open(SCRIPT_DIR / "index.html", "w") as f:
         f.write(html)
 
-    print("Generated downloadoverview.html")
+    print("Generated index.html")
 
 
 if __name__ == "__main__":

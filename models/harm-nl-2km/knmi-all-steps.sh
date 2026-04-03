@@ -132,7 +132,7 @@ if [ "$DO_UPLOAD" = true ]; then
     gsutil -m cp ./downloads/KNMI43-*.grib gs://weatherfiles.com
     gsutil -m cp ./img/* gs://weatherfiles.com/img/
     gsutil -h "Content-Type:text/html" -h "Cache-Control:no-cache, no-store, must-revalidate" cp "$ROOT_DIR/index.html" gs://weatherfiles.com
-    gsutil -h "Content-Type:text/html" -h "Cache-Control:no-cache, no-store, must-revalidate" cp downloadoverview.html gs://weatherfiles.com
+    gsutil -h "Content-Type:text/html" -h "Cache-Control:no-cache, no-store, must-revalidate" cp index.html gs://weatherfiles.com/downloadoverview.html
 
     echo "[5/5] Purging Cloudflare cache..."
     source "$ROOT_DIR/.env"

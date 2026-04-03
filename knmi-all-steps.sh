@@ -65,8 +65,8 @@ python3 ScaleFraction.py KNMI43CloudCoverFraction.grib KNMI43CloudCover.grib
 
 echo "[2/5] Per-parameter conversion complete."
 
-# ── Step 3: Combine into master file ───────────────────────────────────────
-echo "[3/5] Combining parameters into master grib file..."
+# ── Step 3: Combine into ModelArea master file ─────────────────────────────
+echo "[3/5] Combining parameters into ModelArea master grib file..."
 
 grib_copy KNMI43Wind.grib KNMI43Temperature.grib KNMI43DewPointTemp.grib \
     KNMI43Precipitation.grib KNMI43Pressure.grib KNMI43Humidity.grib \
@@ -80,14 +80,30 @@ echo "[4/5] Slicing into area, time-window, and parameter subsets..."
 
 AREAS="ModelArea Zealand NorthSea Channel WaddenSea NorthSeaSouth LakeIJssel"
 NEXTDAY="P1=0/1/2/3/4/5/6/7/8/9/10/11/12/13/14/15/16/17/18/19/20/21/22/23/24/25/26/27/28/29/30"
+PARAMS="KNMI43Wind.grib KNMI43Temperature.grib KNMI43DewPointTemp.grib KNMI43Precipitation.grib KNMI43Pressure.grib KNMI43Humidity.grib KNMI43Gusts.grib KNMI43CloudCover.grib"
 
-# Slice by geographic area (skip ModelArea — already exists)
-cdo sellonlatbox,3,4.5,51.2,52       KNMI43-ModelArea-alltime-allparams.grib KNMI43-Zealand-alltime-allparams.grib
-cdo sellonlatbox,0,9,51,56           KNMI43-ModelArea-alltime-allparams.grib KNMI43-NorthSea-alltime-allparams.grib
-cdo sellonlatbox,0,2,49.3,51         KNMI43-ModelArea-alltime-allparams.grib KNMI43-Channel-alltime-allparams.grib
-cdo sellonlatbox,4.5,7.5,52.9,53.8   KNMI43-ModelArea-alltime-allparams.grib KNMI43-WaddenSea-alltime-allparams.grib
-cdo sellonlatbox,0,5,51,54           KNMI43-ModelArea-alltime-allparams.grib KNMI43-NorthSeaSouth-alltime-allparams.grib
-cdo sellonlatbox,5,5.9,52.2,53.1     KNMI43-ModelArea-alltime-allparams.grib KNMI43-LakeIJssel-alltime-allparams.grib
+# Slice each parameter individually by area then combine — avoids CDO dropping
+# parameters when processing a multi-parameter GRIB1 file over small areas.
+slice_area() {
+    local AREA=$1
+    local BBOX=$2
+    local TMPDIR=$(mktemp -d)
+    local SLICED=()
+    for PARAM in $PARAMS; do
+        local OUT="$TMPDIR/${PARAM}"
+        cdo sellonlatbox,$BBOX "$PARAM" "$OUT" 2>/dev/null
+        SLICED+=("$OUT")
+    done
+    grib_copy "${SLICED[@]}" "KNMI43-${AREA}-alltime-allparams.grib"
+    rm -rf "$TMPDIR"
+}
+
+slice_area Zealand        3,4.5,51.2,52
+slice_area NorthSea       0,9,51,56
+slice_area Channel        0,2,49.3,51
+slice_area WaddenSea      4.5,7.5,52.9,53.8
+slice_area NorthSeaSouth  0,5,51,54
+slice_area LakeIJssel     5,5.9,52.2,53.1
 
 # Slice by time window (next day = P1 0–30h)
 for AREA in $AREAS; do

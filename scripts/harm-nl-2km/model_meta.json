@@ -11,7 +11,7 @@
   "areas": [
     {
       "key": "ModelArea",
-      "img": null,
+      "img": "ModelArea.png",
       "label": "Model Area",
       "subtitle": "Full model domain",
       "bbox": null

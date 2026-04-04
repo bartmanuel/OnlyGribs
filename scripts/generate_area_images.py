@@ -1,9 +1,12 @@
 """
 Generate map images for each geographic area defined in model_meta.json.
 
-For each bounded area (bbox != null) this script renders an OSM base map
-composited with an OpenSeaMap seamark overlay, draws the bounding box
-rectangle, and saves a PNG to www/models/<model-id>/img/<area-key>.png.
+For each area this script renders an OSM base map composited with an
+OpenSeaMap seamark overlay, draws the bounding box rectangle, and saves
+a PNG to www/models/<model-id>/img/<area-key>.png.
+
+ModelArea (bbox=null) gets an image derived from the union of all other
+areas' bboxes, expanded by 20%, with no rectangle drawn.
 
 Usage:
     python3 scripts/generate_area_images.py                  # all models
@@ -87,7 +90,7 @@ def stitch_layer(tx1, tx2, ty1, ty2, zoom, url_tpl, transparent_bg=False):
 
 # ── Image generation ─────────────────────────────────────────────────────────
 
-def generate_area_image(lon_w, lon_e, lat_s, lat_n, out_path):
+def generate_area_image(lon_w, lon_e, lat_s, lat_n, out_path, draw_box=True):
     pad_lon = (lon_e - lon_w) * 0.40
     pad_lat = (lat_n - lat_s) * 0.40
     vlon_w = lon_w - pad_lon
@@ -129,15 +132,17 @@ def generate_area_image(lon_w, lon_e, lat_s, lat_n, out_path):
     x0, y0 = lpx(lon_w), tpx(lat_n)
     x1, y1 = lpx(lon_e), tpx(lat_s)
 
-    # Semi-transparent fill
-    overlay = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
-    ImageDraw.Draw(overlay).rectangle([x0, y0, x1, y1], fill=(*PRIMARY, 30))
-    base = Image.alpha_composite(base, overlay)
+    if draw_box:
+        # Semi-transparent fill
+        overlay = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
+        ImageDraw.Draw(overlay).rectangle([x0, y0, x1, y1], fill=(*PRIMARY, 30))
+        base = Image.alpha_composite(base, overlay)
+        # Solid outline
+        ImageDraw.Draw(base).rectangle([x0, y0, x1, y1], outline=(*PRIMARY, 255), width=3)
 
-    # Solid outline
-    ImageDraw.Draw(base).rectangle([x0, y0, x1, y1], outline=(*PRIMARY, 255), width=3)
-
-    # Crop centred on bbox with generous context, then resize to output
+    # Crop centred on bbox with generous context, then resize to output.
+    # The crop box must have exactly OUT_W:OUT_H aspect ratio before resize
+    # to avoid stretching the map.
     cx = (x0 + x1) / 2
     cy = (y0 + y1) / 2
     bbox_w = (x1 - x0) * 1.6
@@ -146,12 +151,25 @@ def generate_area_image(lon_w, lon_e, lat_s, lat_n, out_path):
     cw2 = max(bbox_w, bbox_h * aspect)
     ch2 = cw2 / aspect
 
-    box = (
-        max(0, int(cx - cw2 / 2)),
-        max(0, int(cy - ch2 / 2)),
-        min(cw, int(cx + cw2 / 2)),
-        min(ch, int(cy + ch2 / 2)),
-    )
+    # Clamp to canvas, then restore aspect ratio by expanding the short side
+    left   = max(0, cx - cw2 / 2)
+    top    = max(0, cy - ch2 / 2)
+    right  = min(cw, cx + cw2 / 2)
+    bottom = min(ch, cy + ch2 / 2)
+    actual_w = right - left
+    actual_h = bottom - top
+    if actual_w / actual_h > aspect:
+        # Too wide — trim width to match height
+        excess = actual_w - actual_h * aspect
+        left  += excess / 2
+        right -= excess / 2
+    else:
+        # Too tall — trim height to match width
+        excess = actual_h - actual_w / aspect
+        top    += excess / 2
+        bottom -= excess / 2
+
+    box = (int(left), int(top), int(right), int(bottom))
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     base.crop(box).resize((OUT_W, OUT_H), Image.LANCZOS).convert("RGB").save(out_path, "PNG")
@@ -159,6 +177,19 @@ def generate_area_image(lon_w, lon_e, lat_s, lat_n, out_path):
 
 
 # ── Main ─────────────────────────────────────────────────────────────────────
+
+def union_bbox(areas):
+    """Return (lon_w, lon_e, lat_s, lat_n) covering all bounded areas."""
+    bboxes = [list(map(float, a["bbox"].split(","))) for a in areas if a.get("bbox")]
+    lon_w = min(b[0] for b in bboxes)
+    lon_e = max(b[1] for b in bboxes)
+    lat_s = min(b[2] for b in bboxes)
+    lat_n = max(b[3] for b in bboxes)
+    # Expand 20% for context
+    pad_lon = (lon_e - lon_w) * 0.20
+    pad_lat = (lat_n - lat_s) * 0.20
+    return lon_w - pad_lon, lon_e + pad_lon, lat_s - pad_lat, lat_n + pad_lat
+
 
 def process_model(model_id):
     meta_path = SCRIPTS_DIR / model_id / "model_meta.json"
@@ -168,15 +199,23 @@ def process_model(model_id):
     img_dir = WWW_DIR / "models" / model_id / "img"
     img_dir.mkdir(parents=True, exist_ok=True)
 
-    areas = [a for a in meta["areas"] if a.get("bbox")]
-    print(f"  {len(areas)} bounded areas")
+    all_areas = meta["areas"]
+    print(f"  {len(all_areas)} areas")
 
-    for area in areas:
+    for area in all_areas:
         key = area["key"]
-        lon_w, lon_e, lat_s, lat_n = map(float, area["bbox"].split(","))
         out_file = img_dir / f"{key}.png"
-        print(f"  [{key}] bbox={area['bbox']}")
-        generate_area_image(lon_w, lon_e, lat_s, lat_n, out_file)
+
+        if area.get("bbox"):
+            lon_w, lon_e, lat_s, lat_n = map(float, area["bbox"].split(","))
+            draw_box = True
+        else:
+            # ModelArea: use the union of all other areas, no bbox rectangle
+            lon_w, lon_e, lat_s, lat_n = union_bbox(all_areas)
+            draw_box = False
+
+        print(f"  [{key}] {'bbox=' + area['bbox'] if area.get('bbox') else 'union bbox'}")
+        generate_area_image(lon_w, lon_e, lat_s, lat_n, out_file, draw_box=draw_box)
 
 
 def main():

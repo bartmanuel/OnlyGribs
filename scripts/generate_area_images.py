@@ -228,11 +228,7 @@ def process_model(model_id):
     all_areas = meta["areas"]
     print(f"  {len(all_areas)} areas")
 
-    # Precompute all sub-area bboxes for the ModelArea overview
-    sub_bboxes = [
-        tuple(map(float, a["bbox"].split(",")))
-        for a in all_areas if a.get("bbox")
-    ]
+    model_bbox = meta.get("model_bbox")
 
     for area in all_areas:
         key = area["key"]
@@ -241,12 +237,18 @@ def process_model(model_id):
         if area.get("bbox"):
             lon_w, lon_e, lat_s, lat_n = map(float, area["bbox"].split(","))
             draw_boxes = [(lon_w, lon_e, lat_s, lat_n)]
+            label = f"bbox={area['bbox']}"
         else:
-            # ModelArea: show full coverage with all sub-area bboxes drawn
-            lon_w, lon_e, lat_s, lat_n = union_bbox(all_areas)
-            draw_boxes = sub_bboxes
+            # ModelArea: use actual model domain from model_bbox
+            if model_bbox:
+                lon_w, lon_e, lat_s, lat_n = map(float, model_bbox.split(","))
+                label = f"model_bbox={model_bbox}"
+            else:
+                lon_w, lon_e, lat_s, lat_n = union_bbox(all_areas)
+                label = "union bbox (fallback)"
+            draw_boxes = [(lon_w, lon_e, lat_s, lat_n)]
 
-        print(f"  [{key}] {'bbox=' + area['bbox'] if area.get('bbox') else 'union bbox'}")
+        print(f"  [{key}] {label}")
         generate_area_image(lon_w, lon_e, lat_s, lat_n, out_file, draw_boxes=draw_boxes)
 
 

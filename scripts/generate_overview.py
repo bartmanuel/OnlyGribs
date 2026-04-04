@@ -48,24 +48,24 @@ def render_card(area, prefix, ext, file_sizes, alltime_col, nextday_col):
     fn_at_wo = f"{prefix}-{key}-alltime-windonly.{ext}"
     fn_nd_wo = f"{prefix}-{key}-nextday-windonly.{ext}"
 
-    header_media = (
-        f'<img src="img/{img}" width="56" height="56" '
-        f'class="shrink-0 grayscale opacity-75" alt="{label} coverage"/>'
+    # Area image — use the generated map PNG if it exists, keyed by area key
+    area_img_name = f"{key}.png"
+    map_block = (
+        f'<img src="img/{area_img_name}" alt="{label} coverage map" '
+        f'class="w-full block object-cover" style="aspect-ratio:640/260"/>'
         if img else
-        '<div class="w-14 h-14 shrink-0 bg-surface-container-highest border border-outline-variant/40 '
-        'flex items-center justify-center">'
-        '<span class="material-symbols-outlined text-on-surface-variant">map</span></div>'
+        '<div class="w-full bg-surface-container-highest border-b border-outline-variant/20 '
+        'flex items-center justify-center" style="aspect-ratio:640/260">'
+        '<span class="material-symbols-outlined text-on-surface-variant text-4xl opacity-40">map</span></div>'
     )
 
     return f"""
     <div class="bg-surface flex flex-col shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-outline-variant/30">
-      <div class="p-5 flex items-center gap-4 border-b border-outline-variant/20 bg-surface-container-low min-h-[5rem]">
-        {header_media}
-        <div>
-          <div class="font-bold text-base leading-tight">{label}</div>
-          <div class="text-[10px] font-mono text-on-surface-variant uppercase tracking-tight mt-0.5">{subtitle}</div>
-        </div>
+      <div class="p-5 border-b border-outline-variant/20 bg-surface-container-low">
+        <div class="font-bold text-base leading-tight">{label}</div>
+        <div class="text-[10px] font-mono text-on-surface-variant uppercase tracking-tight mt-0.5">{subtitle}</div>
       </div>
+      {map_block}
       <table class="w-full text-[11px] font-mono border-collapse">
         <thead>
           <tr class="bg-surface-container-highest">

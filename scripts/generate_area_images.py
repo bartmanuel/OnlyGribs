@@ -90,7 +90,12 @@ def stitch_layer(tx1, tx2, ty1, ty2, zoom, url_tpl, transparent_bg=False):
 
 # ── Image generation ─────────────────────────────────────────────────────────
 
-def generate_area_image(lon_w, lon_e, lat_s, lat_n, out_path, draw_box=True):
+def generate_area_image(lon_w, lon_e, lat_s, lat_n, out_path, draw_boxes=None):
+    """
+    draw_boxes: None or a list of (lon_w, lon_e, lat_s, lat_n) tuples to draw.
+                Pass [(lon_w, lon_e, lat_s, lat_n)] for a single bbox,
+                or a list of tuples for multiple (ModelArea overview).
+    """
     pad_lon = (lon_e - lon_w) * 0.40
     pad_lat = (lat_n - lat_s) * 0.40
     vlon_w = lon_w - pad_lon
@@ -99,6 +104,17 @@ def generate_area_image(lon_w, lon_e, lat_s, lat_n, out_path, draw_box=True):
     vlat_n = lat_n + pad_lat
 
     z = choose_zoom(vlon_w, vlon_e, vlat_s, vlat_n, OUT_W, OUT_H)
+
+    # Before fetching tiles, ensure the viewport is wide enough for the output
+    # aspect ratio. Tall-narrow areas (e.g. Channel at 50°N) need extra
+    # horizontal canvas or the bbox will fall outside the crop.
+    ty_span = lat_to_ty(vlat_s, z) - lat_to_ty(vlat_n, z)
+    tx_span = lon_to_tx(vlon_e, z) - lon_to_tx(vlon_w, z)
+    needed_tx_span = ty_span * OUT_W / OUT_H
+    if needed_tx_span > tx_span:
+        extra_lon = (needed_tx_span - tx_span) / 2**z * 360
+        vlon_w -= extra_lon / 2
+        vlon_e += extra_lon / 2
 
     tx1 = lon_to_tx(vlon_w, z)
     tx2 = lon_to_tx(vlon_e, z)
@@ -118,7 +134,7 @@ def generate_area_image(lon_w, lon_e, lat_s, lat_n, out_path, draw_box=True):
     seamarks = stitch_layer(tx1, tx2, ty1, ty2, z, sea_tpl, transparent_bg=True)
     base = Image.alpha_composite(base, seamarks)
 
-    # Convert bbox coords → pixel coords on canvas
+    # Coord → pixel helpers
     canvas_lon_w = tx_to_lon(tx1, z)
     canvas_lon_e = tx_to_lon(tx2 + 1, z)
     canvas_lat_n = ty_to_lat(ty1, z)
@@ -129,42 +145,52 @@ def generate_area_image(lon_w, lon_e, lat_s, lat_n, out_path, draw_box=True):
     def lpx(lon): return (lon - canvas_lon_w) / lon_span * cw
     def tpx(lat): return (canvas_lat_n - lat) / lat_span * ch
 
-    x0, y0 = lpx(lon_w), tpx(lat_n)
-    x1, y1 = lpx(lon_e), tpx(lat_s)
-
-    if draw_box:
-        # Semi-transparent fill
+    # Draw bounding box(es)
+    if draw_boxes:
         overlay = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
-        ImageDraw.Draw(overlay).rectangle([x0, y0, x1, y1], fill=(*PRIMARY, 30))
+        ov_draw = ImageDraw.Draw(overlay)
+        for bx0, bx1, by0, by1 in [
+            (lpx(b[0]), lpx(b[1]), tpx(b[3]), tpx(b[2])) for b in draw_boxes
+        ]:
+            ov_draw.rectangle([bx0, by0, bx1, by1], fill=(*PRIMARY, 30))
         base = Image.alpha_composite(base, overlay)
-        # Solid outline
-        ImageDraw.Draw(base).rectangle([x0, y0, x1, y1], outline=(*PRIMARY, 255), width=3)
+        draw = ImageDraw.Draw(base)
+        for bx0, bx1, by0, by1 in [
+            (lpx(b[0]), lpx(b[1]), tpx(b[3]), tpx(b[2])) for b in draw_boxes
+        ]:
+            draw.rectangle([bx0, by0, bx1, by1], outline=(*PRIMARY, 255), width=3)
 
-    # Crop centred on bbox with generous context, then resize to output.
-    # The crop box must have exactly OUT_W:OUT_H aspect ratio before resize
-    # to avoid stretching the map.
-    cx = (x0 + x1) / 2
-    cy = (y0 + y1) / 2
-    bbox_w = (x1 - x0) * 1.6
-    bbox_h = (y1 - y0) * 1.6
+    # Crop to the viewport extent (guaranteed to contain all bboxes), then
+    # adjust to output aspect ratio and resize. Using the viewport rather than
+    # bbox*factor ensures the bbox never falls outside the crop for narrow areas.
     aspect = OUT_W / OUT_H
-    cw2 = max(bbox_w, bbox_h * aspect)
-    ch2 = cw2 / aspect
+    vx0, vy0 = lpx(vlon_w), tpx(vlat_n)
+    vx1, vy1 = lpx(vlon_e), tpx(vlat_s)
+    view_w = vx1 - vx0
+    view_h = vy1 - vy0
+    cx = (vx0 + vx1) / 2
+    cy = (vy0 + vy1) / 2
 
-    # Clamp to canvas, then restore aspect ratio by expanding the short side
+    if view_w / view_h > aspect:
+        # Viewport wider than output — match width, expand height
+        cw2, ch2 = view_w, view_w / aspect
+    else:
+        # Viewport taller than output — match height, expand width
+        ch2, cw2 = view_h, view_h * aspect
+
     left   = max(0, cx - cw2 / 2)
     top    = max(0, cy - ch2 / 2)
     right  = min(cw, cx + cw2 / 2)
     bottom = min(ch, cy + ch2 / 2)
+
+    # After clamping, trim the longer axis to restore aspect ratio
     actual_w = right - left
     actual_h = bottom - top
     if actual_w / actual_h > aspect:
-        # Too wide — trim width to match height
         excess = actual_w - actual_h * aspect
         left  += excess / 2
         right -= excess / 2
     else:
-        # Too tall — trim height to match width
         excess = actual_h - actual_w / aspect
         top    += excess / 2
         bottom -= excess / 2
@@ -202,20 +228,26 @@ def process_model(model_id):
     all_areas = meta["areas"]
     print(f"  {len(all_areas)} areas")
 
+    # Precompute all sub-area bboxes for the ModelArea overview
+    sub_bboxes = [
+        tuple(map(float, a["bbox"].split(",")))
+        for a in all_areas if a.get("bbox")
+    ]
+
     for area in all_areas:
         key = area["key"]
         out_file = img_dir / f"{key}.png"
 
         if area.get("bbox"):
             lon_w, lon_e, lat_s, lat_n = map(float, area["bbox"].split(","))
-            draw_box = True
+            draw_boxes = [(lon_w, lon_e, lat_s, lat_n)]
         else:
-            # ModelArea: use the union of all other areas, no bbox rectangle
+            # ModelArea: show full coverage with all sub-area bboxes drawn
             lon_w, lon_e, lat_s, lat_n = union_bbox(all_areas)
-            draw_box = False
+            draw_boxes = sub_bboxes
 
         print(f"  [{key}] {'bbox=' + area['bbox'] if area.get('bbox') else 'union bbox'}")
-        generate_area_image(lon_w, lon_e, lat_s, lat_n, out_file, draw_box=draw_box)
+        generate_area_image(lon_w, lon_e, lat_s, lat_n, out_file, draw_boxes=draw_boxes)
 
 
 def main():

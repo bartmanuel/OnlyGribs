@@ -89,14 +89,16 @@ def main():
             logger.info(f"  {filename}")
             download_file(key, dest)
 
-    meta = {
-        "model_reference_time": run_dt_str,
-        "mf_publication_time": datetime.now(timezone.utc).isoformat(),
-        "run_prefix": run_prefix,
-    }
-    with open(SCRIPT_DIR / "pipeline_meta.json", "w") as f:
+    # Merge runtime fields into model_meta.json (preserves static config).
+    meta_path = SCRIPT_DIR / "model_meta.json"
+    with open(meta_path) as f:
+        meta = json.load(f)
+    meta["model_reference_time"] = run_dt_str
+    meta["source_publication_time"] = datetime.now(timezone.utc).isoformat()
+    meta["run_prefix"] = run_prefix
+    with open(meta_path, "w") as f:
         json.dump(meta, f, indent=2)
-    logger.info(f"Saved pipeline metadata: {meta}")
+    logger.info(f"Updated model_meta.json: ref={run_dt_str}")
 
 
 if __name__ == "__main__":

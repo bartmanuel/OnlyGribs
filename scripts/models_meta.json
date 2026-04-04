@@ -1,0 +1,10 @@
+{
+  "models": [
+    {
+      "id": "harm-nl-2km"
+    },
+    {
+      "id": "arome-hd-1.3km"
+    }
+  ]
+}

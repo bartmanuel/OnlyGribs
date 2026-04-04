@@ -1,0 +1,95 @@
+{
+  "model_name": "HARM NL 2km",
+  "model_h1": "HARM NL 2KM",
+  "model_subtitle": "KNMI High-Resolution Limited Area Model \u00b7 Netherlands & Surrounding Waters \u00b7 2 km grid",
+  "source_pub_label": "KNMI Published",
+  "source_credit": "KNMI Open Data",
+  "file_prefix": "KNMI43",
+  "file_extension": "grib",
+  "alltime_col_label": "All Time",
+  "nextday_col_label": "Next Day",
+  "areas": [
+    {
+      "key": "ModelArea",
+      "img": null,
+      "label": "Model Area",
+      "subtitle": "Full model domain",
+      "bbox": null
+    },
+    {
+      "key": "NorthSea",
+      "img": "NorthSea.png",
+      "label": "North Sea",
+      "subtitle": "Full North Sea basin",
+      "bbox": "0,9,51,56"
+    },
+    {
+      "key": "NorthSeaSouth",
+      "img": "NorthSeaSouth.png",
+      "label": "North Sea South",
+      "subtitle": "Southern North Sea",
+      "bbox": "0,5,51,54"
+    },
+    {
+      "key": "Channel",
+      "img": "Channel.png",
+      "label": "Channel",
+      "subtitle": "English Channel",
+      "bbox": "0,2,49.3,51"
+    },
+    {
+      "key": "Zealand",
+      "img": "Zealand.png",
+      "label": "Zealand",
+      "subtitle": "Zeeland coastal waters",
+      "bbox": "3,4.5,51.2,52"
+    },
+    {
+      "key": "LakeIJssel",
+      "img": "LakeIJssel.png",
+      "label": "Lake IJssel",
+      "subtitle": "IJsselmeer & Markermeer",
+      "bbox": "5,5.9,52.2,53.1"
+    },
+    {
+      "key": "WaddenSea",
+      "img": "WaddenSea.png",
+      "label": "Wadden Sea",
+      "subtitle": "Waddenzee tidal waters",
+      "bbox": "4.5,7.5,52.9,53.8"
+    }
+  ],
+  "file_sizes": {
+    "KNMI43-ModelArea-alltime-allparams.grib": "177 MiB",
+    "KNMI43-ModelArea-alltime-windonly.grib": "35 MiB",
+    "KNMI43-ModelArea-nextday-allparams.grib": "103 MiB",
+    "KNMI43-ModelArea-nextday-windonly.grib": "18 MiB",
+    "KNMI43-NorthSea-alltime-allparams.grib": "95 MiB",
+    "KNMI43-NorthSea-alltime-windonly.grib": "20 MiB",
+    "KNMI43-NorthSea-nextday-allparams.grib": "58 MiB",
+    "KNMI43-NorthSea-nextday-windonly.grib": "10 MiB",
+    "KNMI43-NorthSeaSouth-alltime-allparams.grib": "32 MiB",
+    "KNMI43-NorthSeaSouth-alltime-windonly.grib": "6.7 MiB",
+    "KNMI43-NorthSeaSouth-nextday-allparams.grib": "19 MiB",
+    "KNMI43-NorthSeaSouth-nextday-windonly.grib": "3.4 MiB",
+    "KNMI43-Channel-alltime-allparams.grib": "7.2 MiB",
+    "KNMI43-Channel-alltime-windonly.grib": "1.5 MiB",
+    "KNMI43-Channel-nextday-allparams.grib": "4.3 MiB",
+    "KNMI43-Channel-nextday-windonly.grib": "799 KiB",
+    "KNMI43-Zealand-alltime-allparams.grib": "2.5 MiB",
+    "KNMI43-Zealand-alltime-windonly.grib": "555 KiB",
+    "KNMI43-Zealand-nextday-allparams.grib": "1.5 MiB",
+    "KNMI43-Zealand-nextday-windonly.grib": "282 KiB",
+    "KNMI43-LakeIJssel-alltime-allparams.grib": "1.7 MiB",
+    "KNMI43-LakeIJssel-alltime-windonly.grib": "379 KiB",
+    "KNMI43-LakeIJssel-nextday-allparams.grib": "1.1 MiB",
+    "KNMI43-LakeIJssel-nextday-windonly.grib": "193 KiB",
+    "KNMI43-WaddenSea-alltime-allparams.grib": "5.7 MiB",
+    "KNMI43-WaddenSea-alltime-windonly.grib": "1.2 MiB",
+    "KNMI43-WaddenSea-nextday-allparams.grib": "3.5 MiB",
+    "KNMI43-WaddenSea-nextday-windonly.grib": "629 KiB"
+  },
+  "model_reference_time": "2026-04-04T11:00:00+00:00",
+  "source_publication_time": "2026-04-04T13:33:39+00:00",
+  "latest_filename": "HARM43_V1_P1_2026040411.tar"
+}

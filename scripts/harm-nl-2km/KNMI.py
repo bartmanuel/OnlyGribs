@@ -79,15 +79,16 @@ def main():
         else:
             model_reference_time = None
 
-        # Save metadata for use by generate_overview.py
-        meta = {
-            "model_reference_time": model_reference_time,
-            "knmi_publication_time": knmi_publication_time,
-            "latest_filename": latest_file,
-        }
-        with open(SCRIPT_DIR / "pipeline_meta.json", "w") as f:
+        # Merge runtime fields into model_meta.json (preserves static config).
+        meta_path = SCRIPT_DIR / "model_meta.json"
+        with open(meta_path) as f:
+            meta = json.load(f)
+        meta["model_reference_time"] = model_reference_time
+        meta["source_publication_time"] = knmi_publication_time
+        meta["latest_filename"] = latest_file
+        with open(meta_path, "w") as f:
             json.dump(meta, f, indent=2)
-        logger.info(f"Saved pipeline metadata: {meta}")
+        logger.info(f"Updated model_meta.json: ref={model_reference_time}")
 
         # fetch the download url and download the file
         response2 = api.get_file_url(dataset_name, dataset_version, latest_file)

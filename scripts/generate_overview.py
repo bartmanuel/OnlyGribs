@@ -19,6 +19,7 @@ SCRIPTS_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SCRIPTS_DIR.parent
 WWW_DIR = ROOT_DIR / "www"
 TEMPLATE_FILE = SCRIPTS_DIR / "overview_template.html"
+HOMEPAGE_TEMPLATE_FILE = SCRIPTS_DIR / "homepage_template.html"
 
 
 def format_utc(iso_string):
@@ -128,6 +129,53 @@ def generate_for_model(model_id):
     print(f"  Generated {out_path.relative_to(ROOT_DIR)}")
 
 
+def render_model_card(model_id, meta):
+    name = html.escape(meta["model_h1"])
+    subtitle = html.escape(meta["model_subtitle"])
+    ref_time = format_utc(meta["model_reference_time"]) if meta.get("model_reference_time") else "—"
+    n_areas = len([a for a in meta.get("areas", []) if a.get("bbox")])
+
+    return f"""
+    <a href="models/{model_id}/" class="group bg-surface flex flex-col shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-outline-variant/30 hover:border-primary/40 transition-colors">
+      <div class="p-6 flex-1">
+        <div class="text-[9px] font-mono uppercase tracking-widest text-on-surface-variant mb-3">{html.escape(model_id)}</div>
+        <div class="text-xl font-extrabold tracking-tight leading-tight mb-2 group-hover:text-primary transition-colors">{name}</div>
+        <div class="text-[11px] font-mono text-on-surface-variant leading-snug">{subtitle}</div>
+      </div>
+      <div class="border-t border-outline-variant/20 px-6 py-4 bg-surface-container-low flex justify-between items-end font-mono text-[10px]">
+        <div>
+          <div class="text-on-surface-variant uppercase tracking-wider mb-1">Latest Run</div>
+          <div class="font-bold">{ref_time}</div>
+        </div>
+        <div class="text-right">
+          <div class="text-on-surface-variant uppercase tracking-wider mb-1">Regions</div>
+          <div class="font-bold">{n_areas}</div>
+        </div>
+      </div>
+    </a>"""
+
+
+def generate_homepage(models_cfg):
+    cards_html = ""
+    for model in models_cfg["models"]:
+        model_id = model["id"]
+        meta_path = SCRIPTS_DIR / model_id / "model_meta.json"
+        with open(meta_path, encoding="utf-8") as f:
+            meta = json.load(f)
+        cards_html += render_model_card(model_id, meta)
+
+    generated_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    template = Template(HOMEPAGE_TEMPLATE_FILE.read_text(encoding="utf-8"))
+    output = template.safe_substitute(
+        model_cards_html=cards_html,
+        generated_time=generated_time,
+    )
+
+    out_path = WWW_DIR / "index.html"
+    out_path.write_text(output, encoding="utf-8")
+    print(f"  Generated {out_path.relative_to(ROOT_DIR)}")
+
+
 def main():
     with open(SCRIPTS_DIR / "models_meta.json", encoding="utf-8") as f:
         models_cfg = json.load(f)
@@ -136,6 +184,7 @@ def main():
     print(f"Generating overview pages for {len(models)} model(s)...")
     for model in models:
         generate_for_model(model["id"])
+    generate_homepage(models_cfg)
     print("Done.")
 
 

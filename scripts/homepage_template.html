@@ -55,41 +55,7 @@
   <section class="border-t border-outline-variant/30 px-6 py-12 max-w-7xl mx-auto">
     <h2 class="text-[0.625rem] font-black uppercase tracking-[0.2em] text-primary mb-8">Available Models</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      
-    <a href="models/harm-nl-2km/" class="group bg-surface flex flex-col shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-outline-variant/30 hover:border-primary/40 transition-colors">
-      <div class="p-6 flex-1">
-        <div class="text-[9px] font-mono uppercase tracking-widest text-on-surface-variant mb-3">harm-nl-2km</div>
-        <div class="text-xl font-extrabold tracking-tight leading-tight mb-2 group-hover:text-primary transition-colors">HARM NL 2KM</div>
-        <div class="text-[11px] font-mono text-on-surface-variant leading-snug">KNMI High-Resolution Limited Area Model · Netherlands &amp; Surrounding Waters · 2 km grid</div>
-      </div>
-      <div class="border-t border-outline-variant/20 px-6 py-4 bg-surface-container-low flex justify-between items-end font-mono text-[10px]">
-        <div>
-          <div class="text-on-surface-variant uppercase tracking-wider mb-1">Latest Run</div>
-          <div class="font-bold">2026-04-04 11:00 UTC</div>
-        </div>
-        <div class="text-right">
-          <div class="text-on-surface-variant uppercase tracking-wider mb-1">Regions</div>
-          <div class="font-bold">6</div>
-        </div>
-      </div>
-    </a>
-    <a href="models/arome-hd-1.3km/" class="group bg-surface flex flex-col shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-outline-variant/30 hover:border-primary/40 transition-colors">
-      <div class="p-6 flex-1">
-        <div class="text-[9px] font-mono uppercase tracking-widest text-on-surface-variant mb-3">arome-hd-1.3km</div>
-        <div class="text-xl font-extrabold tracking-tight leading-tight mb-2 group-hover:text-primary transition-colors">AROME HD 1.3KM</div>
-        <div class="text-[11px] font-mono text-on-surface-variant leading-snug">Météo-France High-Resolution Model · Western Europe · 1.3 km grid</div>
-      </div>
-      <div class="border-t border-outline-variant/20 px-6 py-4 bg-surface-container-low flex justify-between items-end font-mono text-[10px]">
-        <div>
-          <div class="text-on-surface-variant uppercase tracking-wider mb-1">Latest Run</div>
-          <div class="font-bold">2026-04-04 09:00 UTC</div>
-        </div>
-        <div class="text-right">
-          <div class="text-on-surface-variant uppercase tracking-wider mb-1">Regions</div>
-          <div class="font-bold">6</div>
-        </div>
-      </div>
-    </a>
+      ${model_cards_html}
     </div>
   </section>
 
@@ -109,7 +75,7 @@
       </div>
       <div>
         <h4 class="text-[11px] font-black uppercase tracking-widest mb-6">Last Updated</h4>
-        <p class="text-[10px] text-on-surface-variant font-mono uppercase tracking-wide">2026-04-04 14:20 UTC</p>
+        <p class="text-[10px] text-on-surface-variant font-mono uppercase tracking-wide">${generated_time}</p>
       </div>
     </div>
 
